@@ -3,7 +3,7 @@
 // @icon        http://psnprofiles.com/forums/favicon.ico
 // @namespace   http://www.loigistal.at/userscripts/
 // @updateURL   https://github.com/Barokai/psnprofiles-enhanced/raw/master/psnprofiles-enhanced.user.js
-// @version     0.78
+// @version     0.79
 // @description On guide pages: adds a button to hide earend trophies, their description and links and uses a new style for earned trophies, On all pages: adds update button
 // @match       http://psnprofiles.com/*
 // @grant       GM_addStyle
@@ -112,10 +112,14 @@ function toggleClass(e, className){
 }
 /* Guide enhancements end --------------------------------------------------- */
 
-//profile enhancements
+/* profile enhancements ----------------------------------------------------- */
+
+// thanks to serverTimeout for sort by rank (his profile: http://psnprofiles.com/forums/user/80890-servertimeout/)
+// see his post here: http://psnprofiles.com/forums/topic/24324-sort-by-rank/?view=findpost&p=647509
 function addSortByRank(){
+    var buttonName = "Rank DESC";
     $('.dropdown').eq(2).find('.dropdown-menu').append(
-        $('<li><a href="">Rank DESC</a></li>').on('click', function(ev) {
+        $('<li><a href="">'+buttonName+'</a></li>').on('click', function(ev) {
             ev.preventDefault();
             var trophyOrder = ['F','E','D','C','B','A','S'];
             for (var r=0; r<=trophyOrder.length; r++){
@@ -123,6 +127,8 @@ function addSortByRank(){
                     jQuery('#gamesTable').append(jQuery(this).closest('tr'));
                 });
             }
+            // set button name, to know if a new sort was set
+            $('.dropdown-toggle.order').text(buttonName);
         })
     );
 }
