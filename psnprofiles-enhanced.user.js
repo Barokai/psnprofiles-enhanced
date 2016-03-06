@@ -33,7 +33,7 @@ padding: 0;\
 }");
 
 
-/* Guide enhancements ---------------------------------------------------------------- */
+/* Guide enhancements ------------------------------------------------------- */
 function addToggleEarnedButton(){
     // add class earned to all links which match earned trophies in overview-info box
     $('.earned > a').each(function(){
@@ -58,7 +58,6 @@ function addToggleTypeButton(){
         var typeName = type.text().replace(/\s+/g, '');
         // add toggle visibility to type boxes
         type.click(function(e){
-            //debugger;
             toggleClass(e, typeName);
         });
         return typeName;
@@ -67,7 +66,7 @@ function addToggleTypeButton(){
     // get corresponding trophies - start with the ones in overview box
     $('table.invisible td small').each(function(index){
         var typeClassName = trophyTypes[index];
-        var trophyHref = $("nobr a",  $(this));     
+        var trophyHref = $("nobr a",  $(this));
         // add class to all found hrefs for this section
         trophyHref.addClass(typeClassName);
 
@@ -78,8 +77,6 @@ function addToggleTypeButton(){
             $(".roadmap-trophies li:contains("+trophyName+")").addClass(typeClassName);
 
             // all the sections
-            //$($('.zebra a:contains('+trophyName+')').closest("div[class*='section-holder']")).addClass(typeClassName);
-            //better version:
             $("div[class*='element section-holder']:contains("+trophyName+")").addClass(typeClassName);
 
             // next the ones in the guide contents on the right
@@ -111,11 +108,9 @@ function toggleClass(e, className){
         element.innerHTML += " *";
     }
 
-    $("." + className).toggle( "slow", function(e) {
-        // Animation complete.
-    });
+    $("." + className).toggle( "slow", function(e) { /* Animation complete. */ });
 }
-/* Guide enhancements end ------------------------------------------------------------ */
+/* Guide enhancements end --------------------------------------------------- */
 
 //profile enhancements
 function addSortByRank(){
@@ -132,16 +127,16 @@ function addSortByRank(){
     );
 }
 
-/* Global enhancements --------------------------------------------------------------- */
+/* Global enhancements ------------------------------------------------------ */
 function addUpdateButton(){
     $('.navigation > ul').append("<li><a href='/?update'>Update</a></li>");
     // TODO check if successfully updated and redirect to the last visited page (where update was clicked)
 }
-/* Global enhancements end ----------------------------------------------------------- */
+/* Global enhancements end ---------------------------------------------------*/
 
-/* ----------------------------------------------------------------------------------- */
-/* apply enhancments to correct pages ------------------------------------------------ */
-/* ----------------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+/* apply enhancements to correct pages -------------------------------------- */
+/* -------------------------------------------------------------------------- */
 
 // add toggle button functionality to all guides (if any earned trophies were found
 if (document.location.pathname.indexOf("/guide/") === 0) {
