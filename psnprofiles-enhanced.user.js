@@ -6,7 +6,7 @@
 // @homepage    https://github.com/Barokai/psnprofiles-enhanced/
 // @license     https://github.com/Barokai/psnprofiles-enhanced/blob/master/LICENSE
 // @updateURL   https://github.com/Barokai/psnprofiles-enhanced/raw/master/psnprofiles-enhanced.user.js
-// @version     0.80
+// @version     0.81
 // @description On guide pages: adds a button to hide earend trophies, their description and links and uses a new style for earned trophies, On all pages: adds update button
 // @match       http://psnprofiles.com/*
 // @grant       GM_addStyle
@@ -111,7 +111,7 @@ function toggleClass(e, className){
         element.innerHTML += " *";
     }
 
-    $("." + className).toggle( "slow", function(e) { /* Animation complete. */ });
+    $("." + className).toggle( "slow", function(e) { /* Animation complete */ });
 }
 /* Guide enhancements end --------------------------------------------------- */
 
@@ -120,21 +120,46 @@ function toggleClass(e, className){
 // thanks to serverTimeout for sort by rank (his profile: http://psnprofiles.com/forums/user/80890-servertimeout/)
 // see his post here: http://psnprofiles.com/forums/topic/24324-sort-by-rank/?view=findpost&p=647509
 function addSortByRank(){
-    var buttonName = "Rank DESC";
-    $('.dropdown').eq(2).find('.dropdown-menu').append(
-        $('<li><a href="">'+buttonName+'</a></li>').on('click', function(ev) {
-            ev.preventDefault();
-            var trophyOrder = ['F','E','D','C','B','A','S'];
-            for (var r=0; r<=trophyOrder.length; r++){
-                jQuery('.'+trophyOrder[r]).each(function() {
-                    jQuery('#gamesTable').append(jQuery(this).closest('tr'));
-                });
-            }
-            // set button name, to know if a new sort was set
-            $('.dropdown-toggle.order').text(buttonName);
+    var dropdown = $('.dropdown').eq(2).find('.dropdown-menu');
+    var buttonNameAsc = "Rank E-S";
+    dropdown.append(
+        $('<li><a href="">'+buttonNameAsc+'</a></li>').click(function(e){
+            sort(e, '+', buttonNameAsc); // + for ascending sort
+        })
+    );
+    var buttonNameDesc = "Rank S-E";
+    dropdown.append(
+        $('<li><a href="">'+buttonNameDesc+'</a></li>').click(function(e){
+            sort(e, '-', buttonNameDesc); // - for descending sort
         })
     );
 }
+
+
+function sort(e, order, buttonName){
+    e.preventDefault();
+    var trophyOrder = ['F','E','D','C','B','A','S'];
+    if(order === '+'){
+        for (var r=0; r<=trophyOrder.length; r++){
+            // TODO: sort ranks by percent before
+            $('.'+trophyOrder[r]).each(function() {
+                $('#gamesTable').append($(this).closest('tr'));
+            });
+        }
+    }
+    if(order === '-'){
+        for (var r=trophyOrder.length; r>=0; r--){
+            // TODO: sort ranks by percent before
+            $('.'+trophyOrder[r]).each(function() {
+                $('#gamesTable').append($(this).closest('tr'));
+            });
+        }
+    }
+
+    // set dropdown button name when new order was set
+    $('.dropdown-toggle.order').text(buttonName);
+}
+/* profile enhancements end ------------------------------------------------- */
 
 /* Global enhancements ------------------------------------------------------ */
 function addUpdateButton(){
