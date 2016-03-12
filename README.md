@@ -3,7 +3,7 @@
 
 [install-link]: https://github.com/Barokai/psnprofiles-enhanced/raw/master/psnprofiles-enhanced.user.js
 [logo]: https://github.com/Barokai/psnprofiles-enhanced/raw/master/img/install48.png (install userscript)
-[![alt text][logo]][install-link]  [click to install (tampermonkey & greasemonkey have to be installed)](https://github.com/Barokai/psnprofiles-enhanced/raw/master/psnprofiles-enhanced.user.js)
+[![alt text][logo]][install-link]  [script (tampermonkey & greasemonkey have to be installed)](https://github.com/Barokai/psnprofiles-enhanced/raw/master/psnprofiles-enhanced.user.js)
 
 
 ####Features:
