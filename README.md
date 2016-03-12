@@ -14,6 +14,8 @@ Adds update profile button to navigation bar on all pages
 
 Adds the possibility to sort games by rank on the profile page (thanks to serverTimeout - http://psnprofiles.com/forums/user/80890-servertimeout/)
 
+Adds a little fix to the game search (by dernopm, his profile: http://psnprofiles.com/forums/user/45256-dernop/, see his post here: http://psnprofiles.com/forums/topic/32107-bugsoddities-in-the-games-search-feature/#entry777278
+
 ---
 
 If you want to try it out, you need to have tampermonkey installed (for chrome) or greasemonkey (for firefox) and click the following link: https://github.com/B...nhanced.user.js
