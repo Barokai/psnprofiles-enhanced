@@ -18,7 +18,7 @@ Adds a little fix to the game search (by dernopm, his profile: http://psnprofile
 
 ---
 
-If you want to try it out, you need to have tampermonkey installed (for chrome) or greasemonkey (for firefox) and click the following link: https://github.com/B...nhanced.user.js
+If you want to try it out, you need to have tampermonkey installed (for chrome) or greasemonkey (for firefox) and click the following link: [psnprofiles-enhanced.user.js](https://github.com/Barokai/psnprofiles-enhanced/raw/master/psnprofiles-enhanced.user.js)
 
 ---
 
