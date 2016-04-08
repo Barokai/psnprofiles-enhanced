@@ -6,7 +6,7 @@
 // @homepage    https://github.com/Barokai/psnprofiles-enhanced/
 // @license     https://github.com/Barokai/psnprofiles-enhanced/blob/master/LICENSE
 // @updateURL   https://github.com/Barokai/psnprofiles-enhanced/raw/master/psnprofiles-enhanced.user.js
-// @version     0.82
+// @version     0.83
 // @description On guide pages: adds a button to hide earend trophies, their description and links and uses a new style for earned trophies, On all pages: adds update button, On game pages: persist search string
 // @match       http://psnprofiles.com/*
 // @grant       GM_addStyle
@@ -37,6 +37,7 @@ padding: 0;\
 
 
 /* Guide enhancements ------------------------------------------------------- */
+// TODO barokai: fix scrolling behavior when trophies are hidden and a trophy link is clicked in Guide Contens column (ID="TOCWrapper")
 function addToggleEarnedButton() {
   // add class earned to all links which match earned trophies in overview-info box
   $('.earned > a').each(function() {
@@ -164,7 +165,7 @@ function sort(e, order, buttonName) {
 /* Global enhancements ------------------------------------------------------ */
 function addUpdateButton() {
   $('.navigation > ul').append("<li><a href='/?update'>Update</a></li>");
-  // TODO check if successfully updated and redirect to the last visited page (where update was clicked)
+  // TODO barokai: check if successfully updated and redirect to the last visited page (where update was clicked)
 }
 /* Global enhancements end ---------------------------------------------------*/
 
@@ -205,34 +206,135 @@ function gameSearchFix() {
     $('#searchGames').val(query).keyup();
   }
 }
-/* Games page enhancements end -----------------------------------------------*/
 
-/* -------------------------------------------------------------------------- */
-/* Apply enhancements to correct pages -------------------------------------- */
-/* -------------------------------------------------------------------------- */
+// TODO barokai: integrate other func in psnp
+var psnp = {
+  id: $('div.user-menu a.dropdown-toggle span').text(),
+  _gamesTable: $('table#gamesTable'), // game table on user profile
+  _gameList: $('table#game_list'),
+  _profileBar: $('div.profile-bar')
+};
+// add percentage on mouseover or integrate into game row
+// add mouse over information like percentage (last row), last played if available etc.
+// thanks to dernop (again) - http://psnprofiles.com/forums/topic/35583-add-possibility-to-hide-earned-trophies-in-guides-with-userscript/#entry932561
+$(function() {
+  // initialize psnp page/DOM information
+
+  // psnp properties
+  $.extend(psnp, {
+    isProfile: psnp._gamesTable[0] !== undefined && psnp._profileBar[0] !== undefined,
+    isOwnProfile: $(psnp._profileBar).find('div.info').text().indexOf(psnp.id) > -1,
+    isGameList: psnp._gameList.length == 1,
+    myGames: JSON.parse(localStorage.getItem('_mygames')) || {}
+  });
+
+  psnp.updateMyGames = function(games) {
+    var count = 0;
+    $.each(games, function(i, e) {
+      psnp.myGames[e.id] = e;
+      count++;
+    });
+    localStorage.setItem('_mygames', JSON.stringify(psnp.myGames));
+    console.log(count + " games added/updated to localstorage.");
+  };
+
+  // PROFILE / GAME LIST
+  psnp.gameList = (function() {
+    if (!psnp.isProfile)
+      return undefined;
+    var _games = [];
+    // register mutationobserver for gameList to handle 'load-on-scroll'
+    var obs = new MutationObserver(function(mutations) {
+      parseGames(); // just re-parse all games if list has changed.
+    });
+    obs.observe(psnp._gamesTable[0], {
+      childList: true,
+      subtree: true
+    });
+
+    // parse PSNP games table (id, name, completion, # of trophies)
+    function parseGames() {
+      _games = [];
+      psnp._gamesTable.find('tr:has(a.bold)').each(function(i, row) {
+        var title = $(row).find('a.bold')[0];
+        var game = {
+          id: title.href.match(/\/trophies\/([^\/]+)/)[1],
+          name: title.innerText,
+          progress: $(row).find('div.progress_outer span').text(),
+          completed: $(row).hasClass('completed'),
+          platinum: $(row).hasClass('platinum'),
+          gold: $(row).find('li.gold').text(),
+          silver: $(row).find('li.silver').text(),
+          bronze: $(row).find('li.bronze').text(),
+        };
+
+        if (!psnp.isOwnProfile && psnp.myGames[game.id]) {
+          var img = $(row).find('img.trophy_image');
+          img.removeClass('no-border').addClass('earned'); // mark owned games
+        }
+        _games.push(game);
+      });
+
+      // if this is our own profile, save the games list.
+      if (psnp.isOwnProfile) {
+        psnp.updateMyGames(_games);
+      }
+    }
+
+    // parse game list initially
+    parseGames();
+
+    return {
+      games: _games
+    };
+  })();
+
+  // #GAMELIST#  global list of games (psnprofiles.com/games)
+
+  // Mark owned game in "Games" list
+  if (psnp.isGameList) {
+    psnp._gameList.find('tr:has(a.bold)').each(function(i, row) {
+      var title = $(row).find('a.bold')[0];
+      var id = title.href.match(/\/trophies\/([^\/"]+)/)[1];
+      var img = $(row).find('img.trophy_image');
+
+      // mark owned games
+      if (psnp.myGames[id]) {
+        if (psnp.myGames[id].platinum)
+          $(row).addClass('platinum'); // add platinum row style
+        if (psnp.myGames[id].completed)
+          $(row).addClass('completed'); // add completed row style
+
+        img.removeClass('no-border').addClass('earned');
+        if (psnp.myGames[id].progress != '100%')
+          img.css('border-color', 'yellow'); //
+
+        // add completion percentage
+        var avgProgress = $(row).children('td:eq(4)').find('span.typo-top');
+        console.log(avgProgress);
+        avgProgress.text(psnp.myGames[id].progress + " / " + avgProgress.text());
+
+      }
+    });
+  }
+});
+
+/* Games page enhancements end -----------------------------------------------*/
 
 // helperfunction to determine if the url matches a certain segment
 function matchesUrl(urlSegment) {
   return document.location.pathname.indexOf(urlSegment) === 0;
 }
 
+/* -------------------------------------------------------------------------- */
+/* Apply enhancements to correct pages -------------------------------------- */
+/* -------------------------------------------------------------------------- */
+
 // add toggle button functionality to all guides (if any earned trophies were found
-if (matchesUrl("/guide/")) {
-  var earnedTrophies = $('.earned > a').length;
-  if (earnedTrophies > 0) {
-    addToggleEarnedButton();
-  }
-
-  addToggleTypeButton();
-}
-
+matchesUrl("/guide/") && $('.earned > a').length > 0 && addToggleEarnedButton();
 // add searchFix to games page
-if (matchesUrl("/games")) {
-  gameSearchFix();
-}
-
-// add update button to navigation on all psnprofile pages
-addUpdateButton();
-
+matchesUrl("/games") && gameSearchFix();
+// add update button to navigation on all psnprofile pages (if logged in)
+psnp.id && addUpdateButton();
 // add only on profile pages and others where a sort dropdown is
-addSortByRank();
+matchesUrl("/" + psnp.id) && addSortByRank();
