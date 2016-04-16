@@ -331,7 +331,8 @@ function matchesUrl(urlSegment) {
 /* -------------------------------------------------------------------------- */
 
 // add toggle button functionality to all guides (if any earned trophies were found
-matchesUrl("/guide/") && addToggleTypeButton() && $('.earned > a').length > 0 && addToggleEarnedButton();
+matchesUrl("/guide/") && addToggleTypeButton();
+matchesUrl("/guide/") && $('.earned > a').length > 0 && addToggleEarnedButton();
 // add searchFix to games page
 matchesUrl("/games") && gameSearchFix();
 // add update button to navigation on all psnprofile pages (if logged in)
