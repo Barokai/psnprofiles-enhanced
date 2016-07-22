@@ -3,10 +3,11 @@
 // @author      Barokai | www.loigistal.at
 // @icon        http://psnprofiles.com/forums/favicon.ico
 // @namespace   http://www.loigistal.at/userscripts/
-// @homepage    https://github.com/Barokai/psnprofiles-enhanced/
 // @license     https://github.com/Barokai/psnprofiles-enhanced/blob/master/LICENSE
+// @homepageURL http://barokai.github.io/psnprofiles-enhanced/
 // @updateURL   https://github.com/Barokai/psnprofiles-enhanced/raw/master/psnprofiles-enhanced.user.js
-// @version     0.84
+// @supportURL  https://github.com/Barokai/psnprofiles-enhanced/issues/new
+// @version     0.85
 // @description On guide pages: adds a button to hide earend trophies, their description and links and uses a new style for earned trophies, On all pages: adds update button, On game pages: persist search string
 // @match       http://psnprofiles.com/*
 // @grant       GM_addStyle
