@@ -7,7 +7,7 @@
 // @homepageURL http://barokai.github.io/psnprofiles-enhanced/
 // @updateURL   https://github.com/Barokai/psnprofiles-enhanced/raw/master/psnprofiles-enhanced.user.js
 // @supportURL  https://github.com/Barokai/psnprofiles-enhanced/issues/new
-// @version     0.86
+// @version     0.87
 // @description On guide pages: adds a button to hide earend trophies, their description and links and uses a new style for earned trophies, On all pages: adds update button, On game pages: persist search string
 // @match       http*://psnprofiles.com/*
 // @grant       GM_addStyle
@@ -17,52 +17,51 @@
 
 // better visible green for earned trophies, used before: #57FF3B
 /*jshint multistr: true */
+/*globals $*/
 GM_addStyle("\
 .tableofcontents li.earned {	\
-background: #bada55 !important;  \
+background: #64a75c !important;  \
 } \
 .roadmap-trophies li.earned { \
-background: #bada55 !important; \
+background: #64a75c !important; \
 } \
 .roadmap-trophies .trophy.earned { \
-background: #bada55 !important; \
+background: #64a75c !important; \
 } \
 .section-holder.earned{ \
-border: 3px solid #bada55; \
+border: 3px solid #64a75c; \
 } \
 #toggleEarned { \
-background-color: #bada55; \
+background-color: #64a75c; \
 }\
 .invisible.tags a.earned{\
-text-shadow: 1px 1px 1px #bada55;\
+text-shadow: 1px 1px 1px #64a75c;\
 }\
 ");
 
-
 /* Guide enhancements ------------------------------------------------------- */
-// TODO barokai: fix scrolling behavior when trophies are hidden and a trophy link is clicked in Guide Contens column (ID="TOCWrapper")
 function addToggleEarnedButton() {
 	// add class earned to all links which match earned trophies in overview-info box
-	$('.earned > a').each(function() {
+	$('.earned > a').each(function () {
 		var trophyName = $(this).text().trim();
 		$('nobr > a:contains(' + trophyName + ')').addClass("earned");
 	});
 
 	// adds class "earned" to sections to hide them with the same toggle function
-	$("img[class*='earned']").each(function() {
+	$("img[class*='earned']").each(function () {
 		// .closest('li').parent().closest('li')
 		// TODO check if class of img isn't .unearned!
 		$($(this).closest("div[class*='section-holder']").parent().closest("div[class*='section-holder']")).addClass("earned");
 	});
 
 	// workaround, above scripts adds earned to all secionts as img with class .unearned is matched too.
-	$("img[class*='unearned']").each(function() {
+	$("img[class*='unearned']").each(function () {
 		// .closest('li').parent().closest('li')
 		$($(this).closest("div[class*='section-holder']").parent().closest("div[class*='section-holder']")).removeClass("earned");
 	});
 
 	// workaround to hide trophies in overview completely
-	$(".trophy.earned").each(function(){
+	$(".trophy.earned").each(function () {
 		$($(this).closest(".col-xs-6")).addClass("earned");
 		$($(this).closest(".col-xs-12")).addClass("earned");
 	});
@@ -70,29 +69,32 @@ function addToggleEarnedButton() {
 	// adds button for toggling to overview info box
 	$(".overview-info").append('<span class="tag" id="toggleEarned" title="click to toggle visiblity of earned trophies"><span class="typo-top">toggle</span><br/><span class="typo-bottom">earned</span>');
 	$(document).on("click", "#toggleEarned", toggleEarned);
+
+	if (hasQueryString("toggled")) {
+		toggleEarned();
+	}
 }
 
-// TODO: fix this, doesn't work in new version.
 function addToggleTypeButton() {
 	// get trophy types (without spaces) - used as classes to toggle them later.
-	var trophyTypes = $('table.invisible .tag').map(function(i, el) {
+	var trophyTypes = $('table.invisible .tag').map(function (i, el) {
 		var type = $(el);
 		var typeName = type.text().replace(/\s+/g, '');
 		// add toggle visibility to type boxes
-		type.click(function(e) {
+		type.click(function (e) {
 			toggleClass(e, typeName);
 		});
 		return typeName;
 	}).get();
 
 	// get corresponding trophies - start with the ones in overview box
-	$('table.invisible td small').each(function(index) {
+	$('table.invisible td small').each(function (index) {
 		var typeClassName = trophyTypes[index];
 		var trophyHref = $("nobr a", $(this));
 		// add class to all found hrefs for this section
 		trophyHref.addClass(typeClassName);
 
-		trophyHref.each(function() {
+		trophyHref.each(function () {
 			var trophyName = $(this).text();
 
 			// contents of roadmap
@@ -115,23 +117,43 @@ function toggleEarned(e) {
 }
 
 function toggleClass(e, className) {
-	var element;
-
-	// get correct element (togglebutton's layout would be destroyed otherwise)
-	if (e.target.parentNode.id != "toggleEarned") {
-		element = e.target;
+	var elem = $("#toggleEarned>span").first();
+	var text = elem.text();
+	if (text.indexOf(" *") >= 0) {
+		elem.text(text.slice(0, -2));
+		removeParam("toggled");
 	} else {
-		element = e.target.parentNode;
+		elem.text(text + " *");
+		addParam("toggled", "true");
 	}
-
-	if (element.innerHTML.indexOf(" *") >= 0) {
-		element.innerHTML = element.innerHTML.slice(0, -2);
-	} else {
-		element.innerHTML += " *";
-	}
-
-	$("." + className).toggle("slow", function(e) { /* Animation complete */ });
+	$("." + className).toggle("slow", function (e) { /* Animation complete */ });
+	return;
 }
+
+function addParam(key, val) {
+	if (!hasQueryString(key)) {
+		var url = new URL(document.location.href);
+		url.searchParams.set(key, val);
+		document.location.href = url.href; // reloads page - find better way?
+		// return url.href;
+	}
+}
+
+function removeParam(key) {
+	if (hasQueryString(key)) {
+		var url = new URL(document.location.href);
+		url.searchParams.delete(key);
+		document.location.href = url.href; // reloads page - find better way?
+		//return url.href;
+	}
+}
+
+function hasQueryString(key) {
+	let params = (new URL(document.location)).searchParams;
+	// ?toggled#18-high-caliber --> has to be set before hash
+	return params.has(key);
+}
+
 /* Guide enhancements end --------------------------------------------------- */
 
 /* Profile enhancements ----------------------------------------------------- */
@@ -142,13 +164,13 @@ function addSortByRank() {
 	var dropdown = $('.dropdown-toggle.order');
 	var buttonNameAsc = "Rank E-S";
 	dropdown.next().append(
-		$('<li><a href="">' + buttonNameAsc + '</a></li>').on('click', function(ev) {
+		$('<li><a href="">' + buttonNameAsc + '</a></li>').on('click', function (ev) {
 			sort(ev, '+', buttonNameAsc); // + for ascending sort
 		})
 	);
 	var buttonNameDesc = "Rank S-E";
 	dropdown.next().append(
-		$('<li><a href="">' + buttonNameDesc + '</a></li>').on('click', function(ev) {
+		$('<li><a href="">' + buttonNameDesc + '</a></li>').on('click', function (ev) {
 			sort(ev, '-', buttonNameDesc); // + for descending sort
 		})
 	);
@@ -161,8 +183,8 @@ function sort(e, order, buttonName) {
 	if (order === '+') {
 		for (r = 0; r <= trophyOrder.length; r++) {
 			// TODO: sort ranks by percent before
-			$('.' + trophyOrder[r]).each(function() {
-				$('.'+trophyOrder[r]).each(function() {
+			$('.' + trophyOrder[r]).each(function () {
+				$('.' + trophyOrder[r]).each(function () {
 					$('#content table.zebra').eq(0).append(jQuery(this).closest('tr'));
 				});
 			});
@@ -171,8 +193,8 @@ function sort(e, order, buttonName) {
 	if (order === '-') {
 		for (r = trophyOrder.length; r >= 0; r--) {
 			// TODO: sort ranks by percent before
-			$('.' + trophyOrder[r]).each(function() {
-				$('.'+trophyOrder[r]).each(function() {
+			$('.' + trophyOrder[r]).each(function () {
+				$('.' + trophyOrder[r]).each(function () {
 					$('#content table.zebra').eq(0).append(jQuery(this).closest('tr'));
 				});
 			});
@@ -197,7 +219,7 @@ function addUpdateButton() {
 // see his post here: http://psnprofiles.com/forums/topic/32107-bugsoddities-in-the-games-search-feature/#entry777278
 function gameSearchFix() {
 	$('#searchGames').off('keyup');
-	$('#searchGames').keyup(function() {
+	$('#searchGames').keyup(function () {
 		window.clearTimeout('searchInt');
 		var input = $(this);
 		if (input.val().length > 1) {
@@ -205,12 +227,12 @@ function gameSearchFix() {
 			$('#closeButton').hide();
 
 			var searchInt = window.setTimeout(
-				function() {
+				function () {
 					$('#pagination').hide();
 					var q = encodeURIComponent(input.val());
 					$.ajax({
 						url: "/php/liveSearch.php?t=g&q=" + q,
-						success: function(html) {
+						success: function (html) {
 							window.location.hash = '#!' + q;
 							$('#game_list').html(html);
 							$('#loading').hide();
@@ -239,7 +261,7 @@ var psnp = {
 // add percentage on mouseover or integrate into game row
 // add mouse over information like percentage (last row), last played if available etc.
 // thanks to dernop (again) - http://psnprofiles.com/forums/topic/35583-add-possibility-to-hide-earned-trophies-in-guides-with-userscript/#entry932561
-$(function() {
+$(function () {
 	// initialize psnp page/DOM information
 
 	// psnp properties
@@ -250,9 +272,9 @@ $(function() {
 		myGames: JSON.parse(localStorage.getItem('_mygames')) || {}
 	});
 
-	psnp.updateMyGames = function(games) {
+	psnp.updateMyGames = function (games) {
 		var count = 0;
-		$.each(games, function(i, e) {
+		$.each(games, function (i, e) {
 			psnp.myGames[e.id] = e;
 			count++;
 		});
@@ -261,12 +283,14 @@ $(function() {
 	};
 
 	// PROFILE / GAME LIST
-	psnp.gameList = (function() {
-		if (!psnp.isProfile)
+	psnp.gameList = (function () {
+		//debugger; // fix this to work again
+		if (!psnp.isProfile) {
 			return undefined;
+		}
 		var _games = [];
 		// register mutationobserver for gameList to handle 'load-on-scroll'
-		var obs = new MutationObserver(function(mutations) {
+		var obs = new MutationObserver(function (mutations) {
 			parseGames(); // just re-parse all games if list has changed.
 		});
 		obs.observe(psnp._gamesTable[0], {
@@ -277,7 +301,7 @@ $(function() {
 		// parse PSNP games table (id, name, completion, # of trophies)
 		function parseGames() {
 			_games = [];
-			psnp._gamesTable.find('tr:has(a.bold)').each(function(i, row) {
+			psnp._gamesTable.find('tr:has(a.bold)').each(function (i, row) {
 				var title = $(row).find('a.bold')[0];
 				var game = {
 					id: title.href.match(/\/trophies\/([^\/]+)/)[1],
@@ -315,7 +339,7 @@ $(function() {
 
 	// Mark owned game in "Games" list
 	if (psnp.isGameList) {
-		psnp._gameList.find('tr:has(a.bold)').each(function(i, row) {
+		psnp._gameList.find('tr:has(a.bold)').each(function (i, row) {
 			var title = $(row).find('a.bold')[0];
 			var id = title.href.match(/\/trophies\/([^\/"]+)/)[1];
 			var img = $(row).find('img.trophy_image');
@@ -363,20 +387,20 @@ psnp.id && addUpdateButton();
 matchesUrl("/" + psnp.id) && addSortByRank();
 
 // http://stackoverflow.com/a/27363569
-(function() {
+(function () {
 	var origOpen = XMLHttpRequest.prototype.open;
 
-	XMLHttpRequest.prototype.open = function() {
+	XMLHttpRequest.prototype.open = function () {
 		// console.log('request started!');
-		this.addEventListener('load', function() {
-			if (~this.responseURL.indexOf("status?user=")){
+		this.addEventListener('load', function () {
+			if (~this.responseURL.indexOf("status?user=")) {
 				// console.log('request completed!');
 				//console.log(this.readyState); //will always be 4 (ajax is completed successfully)
 				//console.log(this.responseText); //whatever the response was
 				var obj = jQuery.parseJSON(this.responseText);
 				var requestName = this.responseURL.substr(this.responseURL.lastIndexOf('/') + 1).replace(psnp.id, "");
 				var status = obj.status.replace(psnp.id, "");
-				if(requestName == "status?user=" && status === " has been updated"){
+				if (requestName == "status?user=" && status === " has been updated") {
 					window.location.href = "https://psnprofiles.com/" + psnp.id;
 				}
 			}
