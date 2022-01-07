@@ -5,7 +5,7 @@
 // @namespace   http://www.loigistal.at/userscripts/
 // @license     https://github.com/Barokai/psnprofiles-enhanced/blob/master/LICENSE
 // @homepageURL http://barokai.github.io/psnprofiles-enhanced/
-// @updateURL   https://github.com/Barokai/psnprofiles-enhanced/raw/master/psnprofiles-enhanced.user.js
+// @updateURL   https://github.com/Barokai/psnprofiles-enhanced/raw/toggle-by-querystring/psnprofiles-enhanced.user.js
 // @supportURL  https://github.com/Barokai/psnprofiles-enhanced/issues/new
 // @version     0.87
 // @description On guide pages: adds a button to hide earend trophies, their description and links and uses a new style for earned trophies, On all pages: adds update button, On game pages: persist search string
